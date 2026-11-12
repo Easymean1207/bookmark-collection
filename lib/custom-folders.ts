@@ -1,26 +1,47 @@
 export type CustomFolder = { id: string; name: string };
-export type FolderStore = { added: CustomFolder[]; deleted: string[] };
+export type FolderStore = { added: CustomFolder[]; deleted: string[]; renamed: Record<string, string> };
+
+export function renameFolder(store: FolderStore, folderId: string, name: string, visibleFolders: CustomFolder[]): FolderStore {
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error("폴더 이름을 입력해 주세요.");
+  if (trimmed.length > 40) throw new Error("폴더 이름은 40자 이내로 입력해 주세요.");
+  const folder = visibleFolders.find((item) => item.id === folderId);
+  if (!folder) throw new Error("폴더를 찾을 수 없습니다.");
+  if (visibleFolders.some((item) => item.id !== folderId && item.name.toLocaleLowerCase() === trimmed.toLocaleLowerCase())) {
+    throw new Error("이미 있는 폴더 이름입니다.");
+  }
+  if (store.added.some((item) => item.id === folderId)) {
+    return { ...store, added: store.added.map((item) => item.id === folderId ? { ...item, name: trimmed } : item) };
+  }
+  return { ...store, renamed: { ...store.renamed, [folderId]: trimmed } };
+}
 
 export function parseFolderStore(raw: string | null): FolderStore {
   try {
     const value: unknown = JSON.parse(raw ?? "[]");
-    if (Array.isArray(value)) return { added: parseCustomFolders(raw), deleted: [] };
-    if (!value || typeof value !== "object") return { added: [], deleted: [] };
-    const saved = value as { added?: unknown; deleted?: unknown };
+    if (Array.isArray(value)) return { added: parseCustomFolders(raw), deleted: [], renamed: {} };
+    if (!value || typeof value !== "object") return { added: [], deleted: [], renamed: {} };
+    const saved = value as { added?: unknown; deleted?: unknown; renamed?: unknown };
     return {
       added: parseCustomFolders(JSON.stringify(saved.added ?? [])),
       deleted: Array.isArray(saved.deleted)
         ? saved.deleted.filter((id): id is string => typeof id === "string")
         : [],
+      renamed: saved.renamed && typeof saved.renamed === "object" && !Array.isArray(saved.renamed)
+        ? Object.fromEntries(Object.entries(saved.renamed).filter(([, name]) =>
+            typeof name === "string" && name.trim().length > 0 && name.length <= 40))
+        : {},
     };
   } catch {
-    return { added: [], deleted: [] };
+    return { added: [], deleted: [], renamed: {} };
   }
 }
 
 export function deleteFolder(store: FolderStore, folderId: string, staticIds: string[]): FolderStore {
   if (staticIds.includes(folderId) && !store.deleted.includes(folderId)) {
-    return { ...store, deleted: [...store.deleted, folderId] };
+    const renamed = { ...store.renamed };
+    delete renamed[folderId];
+    return { ...store, deleted: [...store.deleted, folderId], renamed };
   }
   if (store.added.some((folder) => folder.id === folderId)) {
     return { ...store, added: store.added.filter((folder) => folder.id !== folderId) };

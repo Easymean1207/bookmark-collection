@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useSyncExternalStore } from "react";
 import { folders } from "../lib/bookmarks";
-import { addCustomFolder, deleteFolder as removeFolder, parseFolderStore, type CustomFolder } from "../lib/custom-folders";
+import { addCustomFolder, deleteFolder as removeFolder, parseFolderStore, renameFolder as updateFolder, type CustomFolder } from "../lib/custom-folders";
 
 const storageKey = "bookmark-collection-folders";
 const changeEvent = "bookmark-folders-changed";
@@ -28,12 +28,16 @@ const FolderContext = createContext<{
   ready: boolean;
   addFolder: (name: string) => void;
   deleteFolder: (id: string) => void;
+  renameFolder: (id: string, name: string) => void;
 } | null>(null);
 
 export function FolderProvider({ children }: { children: React.ReactNode }) {
   const stored = useSyncExternalStore(subscribe, getSnapshot, () => null);
   const saved = parseFolderStore(stored);
-  const allFolders = [...folders, ...saved.added].filter((folder) => !saved.deleted.includes(folder.id));
+  const allFolders = [
+    ...folders.map((folder) => ({ ...folder, name: saved.renamed[folder.id] ?? folder.name })),
+    ...saved.added,
+  ].filter((folder) => !saved.deleted.includes(folder.id));
   const ready = stored !== null;
 
   function addFolder(name: string) {
@@ -48,7 +52,13 @@ export function FolderProvider({ children }: { children: React.ReactNode }) {
     window.dispatchEvent(new Event(changeEvent));
   }
 
-  return <FolderContext.Provider value={{ allFolders, ready, addFolder, deleteFolder }}>{children}</FolderContext.Provider>;
+  function renameFolder(id: string, name: string) {
+    const next = updateFolder(saved, id, name, allFolders);
+    localStorage.setItem(storageKey, JSON.stringify(next));
+    window.dispatchEvent(new Event(changeEvent));
+  }
+
+  return <FolderContext.Provider value={{ allFolders, ready, addFolder, deleteFolder, renameFolder }}>{children}</FolderContext.Provider>;
 }
 
 export function useFolders() {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import LinkGrid from "./LinkGrid";
-import { links } from "../lib/bookmarks";
+import { folders, links } from "../lib/bookmarks";
 import { useFolders } from "./FolderProvider";
 import Sidebar from "./Sidebar";
 import styles from "../app/page.module.css";
@@ -10,8 +10,8 @@ import styles from "../app/page.module.css";
 export default function FolderContent({ folderId }: { folderId: string }) {
   const { allFolders, ready } = useFolders();
   const folder = allFolders.find((item) => item.id === folderId);
-  const folderLinks = folder && !folder.id.startsWith("custom-")
-    ? links.filter((link) => link.category === folder.name) : [];
+  const originalName = folders.find((item) => item.id === folderId)?.name;
+  const folderLinks = originalName ? links.filter((link) => link.category === originalName) : [];
 
   return (
     <div className={styles.content}>

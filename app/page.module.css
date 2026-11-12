@@ -14,12 +14,15 @@
 .sidebar { padding: 48px 16px 24px 24px; }
 .folderNav { display: grid; gap: 5px; }
 .folderRow { position: relative; }
-.folder { min-height: 44px; display: flex; align-items: center; padding: 0 44px 0 16px; border-radius: 12px; color: var(--text-sub); font-size: 15px; font-weight: 600; text-decoration: none; transition: color .2s ease, background .2s ease; }
+.folder { min-height: 44px; display: flex; align-items: center; min-width: 0; padding: 0 80px 0 16px; border-radius: 12px; color: var(--text-sub); font-size: 15px; font-weight: 600; text-decoration: none; transition: color .2s ease, background .2s ease; }
+.folderName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .folder:hover { color: var(--text); background: #e9eaec; }
 .folderActive, .folderActive:hover { color: var(--accent-hover); background: var(--accent-soft); font-weight: 700; }
-.deleteButton { position: absolute; top: 50%; right: 7px; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; transform: translateY(-50%); border: 0; border-radius: 8px; color: var(--text-sub); background: transparent; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .2s ease, color .2s ease, background .2s ease; }
-.deleteButton svg { width: 17px; height: 17px; }
-.folderRow:hover .deleteButton, .folderRow:focus-within .deleteButton { opacity: 1; pointer-events: auto; }
+.folderActions { position: absolute; top: 50%; right: 7px; display: flex; transform: translateY(-50%); opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.folderRow:hover .folderActions, .folderRow:focus-within .folderActions { opacity: 1; pointer-events: auto; }
+.editButton, .deleteButton { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px; color: var(--text-sub); background: transparent; cursor: pointer; transition: color .2s ease, background .2s ease; }
+.editButton svg, .deleteButton svg { width: 17px; height: 17px; }
+.editButton:hover { color: var(--accent-hover); background: var(--accent-soft); }
 .deleteButton:hover { color: #c93645; background: #fff0f1; }
 .main { min-width: 0; padding: 48px clamp(24px, 4vw, 64px) 80px 24px; }
 .pageHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
@@ -35,7 +38,7 @@
 .card h2 { margin: 18px 0 8px; padding-right: 12px; font-size: 18px; font-weight: 700; letter-spacing: -.025em; line-height: 1.4; }
 .card p { margin: 0 0 24px; color: var(--text-sub); font-size: 14px; line-height: 1.55; }
 .url { display: block; overflow: hidden; margin-top: auto; color: var(--accent); font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.card:focus-visible, .folder:focus-visible, .deleteButton:focus-visible, .addButton:focus-visible, .folderButton:focus-visible, .cancelButton:focus-visible, .dangerButton:focus-visible, .saveButton:focus-visible, .modalInput:focus-visible, .formField input:focus-visible, .formField select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.card:focus-visible, .folder:focus-visible, .editButton:focus-visible, .deleteButton:focus-visible, .addButton:focus-visible, .folderButton:focus-visible, .cancelButton:focus-visible, .dangerButton:focus-visible, .saveButton:focus-visible, .modalInput:focus-visible, .formField input:focus-visible, .formField select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .emptyState { padding: 40px 24px; border-radius: 16px; color: var(--text-sub); background: var(--surface); text-align: center; }
 .folderDialog { width: min(420px, calc(100% - 32px)); padding: 0; border: 0; border-radius: 20px; color: var(--text); background: var(--surface); box-shadow: 0 20px 60px rgba(25, 31, 40, .18); }
 .folderDialog::backdrop { background: rgba(25, 31, 40, .42); }
@@ -61,8 +64,9 @@
 .formField input::placeholder { color: #8b95a1; }
 .formField input:focus, .formField select:focus { background: var(--surface); }
 .saveButton { min-height: 50px; margin-top: 4px; font-size: 15px; }
+.modalActions .saveButton { min-height: 44px; margin-top: 0; font-size: 14px; }
 @media (hover: none) {
-  .deleteButton { opacity: 1; pointer-events: auto; }
+  .folderActions { opacity: 1; pointer-events: auto; }
 }
 @media (max-width: 800px) {
   .content { display: block; }
