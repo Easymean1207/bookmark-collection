@@ -29,3 +29,22 @@ export function appendSavedLink(existing: SavedLink[], link: SavedLink, knownUrl
   }
   return [...existing, link];
 }
+
+export function parseDeletedLinks(raw: string | null): string[] {
+  try {
+    const value: unknown = JSON.parse(raw ?? "[]");
+    return Array.isArray(value) ? value.filter(webUrl) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function removeLink(saved: SavedLink[], deleted: string[], url: string, builtInUrls: string[]) {
+  if (builtInUrls.includes(url) && !deleted.includes(url)) {
+    return { saved, deleted: [...deleted, url] };
+  }
+  if (saved.some((link) => link.url === url)) {
+    return { saved: saved.filter((link) => link.url !== url), deleted };
+  }
+  throw new Error("링크를 찾을 수 없습니다.");
+}

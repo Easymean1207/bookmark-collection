@@ -6,6 +6,9 @@ import { addCustomFolder, deleteFolder as removeFolder, parseFolderStore, rename
 
 const storageKey = "bookmark-collection-folders";
 const changeEvent = "bookmark-folders-changed";
+const subscribeHydration = () => () => {};
+const clientHydrated = () => true;
+const serverHydrated = () => false;
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener(changeEvent, callback);
@@ -63,6 +66,7 @@ export function FolderProvider({ children }: { children: React.ReactNode }) {
 
 export function useFolders() {
   const context = useContext(FolderContext);
+  const hydrated = useSyncExternalStore(subscribeHydration, clientHydrated, serverHydrated);
   if (!context) throw new Error("FolderProvider is missing");
-  return context;
+  return hydrated ? context : { ...context, allFolders: folders, ready: false };
 }

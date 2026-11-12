@@ -4,17 +4,18 @@ import Link from "next/link";
 import LinkGrid from "./LinkGrid";
 import { folders, links } from "../lib/bookmarks";
 import { useFolders } from "./FolderProvider";
-import { useSavedLinks } from "./useSavedLinks";
+import { useDeletedLinks, useSavedLinks } from "./useSavedLinks";
 import Sidebar from "./Sidebar";
 import styles from "../app/page.module.css";
 
 export default function FolderContent({ folderId }: { folderId: string }) {
   const { allFolders, ready } = useFolders();
   const savedLinks = useSavedLinks();
+  const deletedLinks = useDeletedLinks();
   const folder = allFolders.find((item) => item.id === folderId);
   const originalName = folders.find((item) => item.id === folderId)?.name;
   const folderLinks = [
-    ...(originalName ? links.filter((link) => link.category === originalName) : []),
+    ...(originalName ? links.filter((link) => link.category === originalName && !deletedLinks.includes(link.url)) : []),
     ...savedLinks.filter((link) => link.folderId === folderId),
   ];
 

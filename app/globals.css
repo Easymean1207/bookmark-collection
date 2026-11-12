@@ -2,6 +2,13 @@
 
 * { box-sizing: border-box; }
 
+.linkCard:hover .linkCardDelete, .linkCard:focus-within .linkCardDelete { opacity: 1; pointer-events: auto; }
+.linkCard:hover a::after, .linkCard:focus-within a::after { opacity: 0; }
+@media (hover: none) {
+  .linkCard .linkCardDelete { opacity: 1; pointer-events: auto; }
+  .linkCard a::after { opacity: 0; }
+}
+
 :root {
   --background: #f4f4f4;
   --surface: #ffffff;

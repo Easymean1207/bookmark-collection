@@ -3,12 +3,14 @@
 import Header from "../components/Header";
 import LinkGrid from "../components/LinkGrid";
 import Sidebar from "../components/Sidebar";
-import { useSavedLinks } from "../components/useSavedLinks";
+import { useDeletedLinks, useSavedLinks } from "../components/useSavedLinks";
 import { links } from "../lib/bookmarks";
 import styles from "./page.module.css";
 
 export default function Home() {
-  const allLinks = [...links, ...useSavedLinks()];
+  const savedLinks = useSavedLinks();
+  const deletedLinks = useDeletedLinks();
+  const allLinks = [...links.filter((link) => !deletedLinks.includes(link.url)), ...savedLinks];
   return (
     <div className={styles.shell}>
       <Header />
