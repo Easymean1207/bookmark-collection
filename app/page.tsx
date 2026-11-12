@@ -1,10 +1,14 @@
+"use client";
+
 import Header from "../components/Header";
 import LinkGrid from "../components/LinkGrid";
 import Sidebar from "../components/Sidebar";
+import { useSavedLinks } from "../components/useSavedLinks";
 import { links } from "../lib/bookmarks";
 import styles from "./page.module.css";
 
 export default function Home() {
+  const allLinks = [...links, ...useSavedLinks()];
   return (
     <div className={styles.shell}>
       <Header />
@@ -16,9 +20,9 @@ export default function Home() {
               <h1 className={styles.pageTitle}>모아둔 링크</h1>
               <p className={styles.pageSubtitle}>필요한 순간, 저장해 둔 링크를 바로 찾아보세요.</p>
             </div>
-            <span className={styles.linkCount}>전체 {links.length}개</span>
+            <span className={styles.linkCount}>전체 {allLinks.length}개</span>
           </div>
-          <LinkGrid links={links} />
+          <LinkGrid links={allLinks} />
         </main>
       </div>
     </div>

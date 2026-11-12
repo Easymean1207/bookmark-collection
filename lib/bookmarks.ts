@@ -1,4 +1,4 @@
-export type LinkItem = { title: string; description: string; url: string; category: string };
+export type LinkItem = { title: string; description: string; url: string; category: string; folderId?: string; thumbnail?: string | null };
 
 export const folders = [
   { id: "development", name: "개발" },

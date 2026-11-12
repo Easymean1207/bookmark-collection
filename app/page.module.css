@@ -34,6 +34,7 @@
 .card { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 200px; padding: 24px; border-radius: 16px; color: inherit; background: var(--surface); box-shadow: 0 2px 8px rgba(25, 31, 40, .06); text-decoration: none; transition: box-shadow .2s ease, transform .2s ease; }
 .card:hover { box-shadow: 0 8px 24px rgba(25, 31, 40, .12); transform: translateY(-2px); }
 .card::after { content: "↗"; position: absolute; top: 22px; right: 24px; color: #8b95a1; font-size: 19px; line-height: 1; }
+.thumbnail { display: block; width: 100%; aspect-ratio: 16 / 9; margin-bottom: 18px; border-radius: 12px; object-fit: cover; background: var(--background); }
 .category { align-self: flex-start; padding: 5px 10px; border-radius: 8px; color: var(--accent-hover); background: var(--accent-soft); font-size: 12px; font-weight: 700; line-height: 1.2; }
 .card h2 { margin: 18px 0 8px; padding-right: 12px; font-size: 18px; font-weight: 700; letter-spacing: -.025em; line-height: 1.4; }
 .card p { margin: 0 0 24px; color: var(--text-sub); font-size: 14px; line-height: 1.55; }
@@ -64,6 +65,7 @@
 .formField input::placeholder { color: #8b95a1; }
 .formField input:focus, .formField select:focus { background: var(--surface); }
 .saveButton { min-height: 50px; margin-top: 4px; font-size: 15px; }
+.saveButton:disabled { background: #b0b8c1; cursor: wait; }
 .modalActions .saveButton { min-height: 44px; margin-top: 0; font-size: 14px; }
 @media (hover: none) {
   .folderActions { opacity: 1; pointer-events: auto; }
