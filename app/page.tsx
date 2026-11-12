@@ -10,7 +10,16 @@ export default function Home() {
       <Header />
       <div className={styles.content}>
         <Sidebar />
-        <main className={styles.main}><LinkGrid links={links} /></main>
+        <main className={styles.main}>
+          <div className={styles.pageHeading}>
+            <div>
+              <h1 className={styles.pageTitle}>모아둔 링크</h1>
+              <p className={styles.pageSubtitle}>필요한 순간, 저장해 둔 링크를 바로 찾아보세요.</p>
+            </div>
+            <span className={styles.linkCount}>전체 {links.length}개</span>
+          </div>
+          <LinkGrid links={links} />
+        </main>
       </div>
     </div>
   );
