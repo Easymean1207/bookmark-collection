@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import CustomFolderContent from "../../../components/CustomFolderContent";
 import Header from "../../../components/Header";
 import LinkGrid from "../../../components/LinkGrid";
 import Sidebar from "../../../components/Sidebar";
@@ -13,7 +14,10 @@ export function generateStaticParams() {
 async function FolderContent({ params }: { params: PageProps<"/folder/[folderId]">["params"] }) {
   const { folderId } = await params;
   const folder = folders.find((item) => item.id === folderId);
-  if (!folder) notFound();
+  if (!folder) {
+    if (!folderId.startsWith("custom-")) notFound();
+    return <CustomFolderContent folderId={folderId} />;
+  }
 
   return (
     <div className={styles.content}>

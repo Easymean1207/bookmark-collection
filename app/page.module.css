@@ -2,6 +2,11 @@
 .header { height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(20px, 4vw, 56px); background: var(--surface); box-shadow: 0 1px 0 rgba(25, 31, 40, .06); }
 .logo { display: inline-flex; align-items: center; gap: 11px; font-size: 20px; font-weight: 800; letter-spacing: -.045em; }
 .logo::before { content: "✦"; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; color: var(--surface); background: var(--accent); font-size: 20px; line-height: 1; }
+.headerActions { display: flex; align-items: center; gap: 8px; }
+.folderButton { min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; color: var(--accent-hover); background: var(--accent-soft); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .2s ease, transform .2s ease; }
+.folderButton:hover { background: #d6eaff; }
+.folderButton:active { transform: scale(.98); }
+.folderButton:disabled { opacity: .5; cursor: wait; }
 .addButton, .saveButton { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; color: var(--surface); background: var(--accent); font: inherit; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer; transition: background .2s ease, transform .2s ease; }
 .addButton:hover, .saveButton:hover { background: var(--accent-hover); }
 .addButton:active, .saveButton:active { transform: scale(.98); }
@@ -25,7 +30,19 @@
 .card h2 { margin: 18px 0 8px; padding-right: 12px; font-size: 18px; font-weight: 700; letter-spacing: -.025em; line-height: 1.4; }
 .card p { margin: 0 0 24px; color: var(--text-sub); font-size: 14px; line-height: 1.55; }
 .url { display: block; overflow: hidden; margin-top: auto; color: var(--accent); font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.card:focus-visible, .folder:focus-visible, .addButton:focus-visible, .saveButton:focus-visible, .formField input:focus-visible, .formField select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.card:focus-visible, .folder:focus-visible, .addButton:focus-visible, .folderButton:focus-visible, .cancelButton:focus-visible, .saveButton:focus-visible, .modalInput:focus-visible, .formField input:focus-visible, .formField select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.emptyState { padding: 40px 24px; border-radius: 16px; color: var(--text-sub); background: var(--surface); text-align: center; }
+.folderDialog { width: min(420px, calc(100% - 32px)); padding: 0; border: 0; border-radius: 20px; color: var(--text); background: var(--surface); box-shadow: 0 20px 60px rgba(25, 31, 40, .18); }
+.folderDialog::backdrop { background: rgba(25, 31, 40, .42); }
+.modalForm { display: grid; gap: 12px; padding: 28px; }
+.modalForm h2 { margin: 0 0 12px; font-size: 22px; letter-spacing: -.04em; }
+.modalForm label { font-size: 14px; font-weight: 700; }
+.modalInput { width: 100%; min-height: 50px; padding: 0 16px; border: 0; border-radius: 12px; color: var(--text); background: var(--background); font: inherit; font-size: 15px; }
+.modalInput::placeholder { color: #8b95a1; }
+.formError { margin: 0; color: #f04452; font-size: 13px; }
+.modalActions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.cancelButton { min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; color: var(--text-sub); background: var(--background); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.cancelButton:hover { background: #e9eaec; }
 .newLinkContent { max-width: 640px; margin: 0 auto; }
 .newLinkContent h1 { margin: 0 0 10px; font-size: 32px; letter-spacing: -.045em; }
 .newLinkContent > p { margin: 0 0 28px; color: var(--text-sub); font-size: 15px; line-height: 1.5; }
@@ -47,6 +64,8 @@
   .header { height: 64px; padding: 0 20px; }
   .logo { gap: 8px; font-size: 17px; }
   .logo::before { width: 28px; height: 28px; font-size: 17px; }
+  .logoText { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  .folderButton { min-height: 40px; padding: 0 12px; font-size: 13px; }
   .addButton { min-height: 40px; padding: 0 13px; font-size: 13px; }
   .pageHeading { align-items: flex-start; }
   .grid { grid-template-columns: 1fr; }
