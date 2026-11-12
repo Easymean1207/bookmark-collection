@@ -1,19 +1,55 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 import { useFolders } from "./FolderProvider";
+import type { CustomFolder } from "../lib/custom-folders";
 import styles from "../app/page.module.css";
 
 export default function Sidebar({ activeFolderId }: { activeFolderId?: string | null }) {
-  const { allFolders } = useFolders();
+  const { allFolders, deleteFolder } = useFolders();
+  const router = useRouter();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [selectedFolder, setSelectedFolder] = useState<CustomFolder | null>(null);
+  const [error, setError] = useState("");
+
+  function confirmDelete(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedFolder) return;
+    try {
+      deleteFolder(selectedFolder.id);
+      dialogRef.current?.close();
+      if (activeFolderId === selectedFolder.id) router.push("/");
+    } catch {
+      setError("폴더를 삭제하지 못했습니다.");
+    }
+  }
+
   return (
     <aside className={styles.sidebar}>
       <nav className={styles.folderNav} aria-label="북마크 폴더">
         <Link className={`${styles.folder} ${activeFolderId === undefined ? styles.folderActive : ""}`} href="/" aria-current={activeFolderId === undefined ? "page" : undefined}>All</Link>
         {allFolders.map((folder) => (
-          <Link className={`${styles.folder} ${activeFolderId === folder.id ? styles.folderActive : ""}`} href={`/folder/${folder.id}`} aria-current={activeFolderId === folder.id ? "page" : undefined} key={folder.id}>{folder.name}</Link>
+          <div className={styles.folderRow} key={folder.id}>
+            <Link className={`${styles.folder} ${activeFolderId === folder.id ? styles.folderActive : ""}`} href={`/folder/${folder.id}`} aria-current={activeFolderId === folder.id ? "page" : undefined}>{folder.name}</Link>
+            <button className={styles.deleteButton} type="button" aria-label={`${folder.name} 폴더 삭제`} title={`${folder.name} 폴더 삭제`} onClick={() => { setSelectedFolder(folder); setError(""); dialogRef.current?.showModal(); }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 3h4m-8 4 1 14h10l1-14M10 11v6m4-6v6" /></svg>
+            </button>
+          </div>
         ))}
       </nav>
+      <dialog className={styles.folderDialog} ref={dialogRef} aria-labelledby="delete-folder-title" onClose={() => { setSelectedFolder(null); setError(""); }}>
+        <form className={styles.modalForm} onSubmit={confirmDelete}>
+          <h2 id="delete-folder-title">폴더를 삭제할까요?</h2>
+          <p className={styles.modalDescription}>“{selectedFolder?.name}” 폴더를 삭제합니다. 저장된 링크는 전체 목록에 남습니다.</p>
+          {error && <p className={styles.formError} role="alert">{error}</p>}
+          <div className={styles.modalActions}>
+            <button className={styles.cancelButton} type="button" autoFocus onClick={() => dialogRef.current?.close()}>취소</button>
+            <button className={styles.dangerButton} type="submit">삭제</button>
+          </div>
+        </form>
+      </dialog>
     </aside>
   );
 }
