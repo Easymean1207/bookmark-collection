@@ -32,7 +32,7 @@ const FolderContext = createContext<{
   ready: boolean;
   addFolder: (name: string) => Promise<void>;
   deleteFolder: (id: string) => void;
-  renameFolder: (id: string, name: string) => void;
+  renameFolder: (id: string, name: string) => Promise<void>;
 } | null>(null);
 
 export function FolderProvider({ children }: { children: React.ReactNode }) {
@@ -71,8 +71,15 @@ export function FolderProvider({ children }: { children: React.ReactNode }) {
     window.dispatchEvent(new Event(changeEvent));
   }
 
-  function renameFolder(id: string, name: string) {
+  async function renameFolder(id: string, name: string) {
     const next = updateFolder(saved, id, name, allFolders);
+    if (id.startsWith("db-")) {
+      const { data, error } = await createClient().from("folders")
+        .update({ name: name.trim() }).eq("id", id.slice(3)).select("name").single();
+      if (error) throw error;
+      setDatabaseFolders((current) => current?.map((folder) => folder.id === id ? { ...folder, name: data.name } : folder) ?? []);
+      return;
+    }
     localStorage.setItem(storageKey, JSON.stringify(next));
     window.dispatchEvent(new Event(changeEvent));
   }

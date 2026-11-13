@@ -17,17 +17,24 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
   const [editingFolder, setEditingFolder] = useState<CustomFolder | null>(null);
   const [editName, setEditName] = useState("");
   const [editError, setEditError] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const savingEditRef = useRef(false);
 
-  function saveEdit(event: React.FormEvent<HTMLFormElement>) {
+  async function saveEdit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editingFolder) return;
+    if (!editingFolder || savingEditRef.current) return;
+    savingEditRef.current = true;
+    setSavingEdit(true);
     try {
-      renameFolder(editingFolder.id, editName);
+      await renameFolder(editingFolder.id, editName);
       editDialogRef.current?.close();
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "";
       setEditError(["폴더 이름을 입력해 주세요.", "폴더 이름은 40자 이내로 입력해 주세요.", "이미 있는 폴더 이름입니다."].includes(message)
         ? message : "폴더 이름을 수정하지 못했습니다.");
+    } finally {
+      savingEditRef.current = false;
+      setSavingEdit(false);
     }
   }
 
@@ -50,14 +57,14 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
         {allFolders.map((folder) => (
           <div className={styles.folderRow} key={folder.id}>
             <Link className={`${styles.folder} ${activeFolderId === folder.id ? styles.folderActive : ""}`} href={`/folder/${folder.id}`} aria-current={activeFolderId === folder.id ? "page" : undefined}><span className={styles.folderName}>{folder.name}</span></Link>
-            {!folder.id.startsWith("db-") && <div className={styles.folderActions}>
+            <div className={styles.folderActions}>
               <button className={styles.editButton} type="button" aria-label={`${folder.name} 폴더 수정`} title={`${folder.name} 폴더 수정`} onClick={() => { setEditingFolder(folder); setEditName(folder.name); setEditError(""); editDialogRef.current?.showModal(); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 5 4 4M4 20l4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16z" /></svg>
               </button>
-              <button className={styles.deleteButton} type="button" aria-label={`${folder.name} 폴더 삭제`} title={`${folder.name} 폴더 삭제`} onClick={() => { setSelectedFolder(folder); setError(""); dialogRef.current?.showModal(); }}>
+              {!folder.id.startsWith("db-") && <button className={styles.deleteButton} type="button" aria-label={`${folder.name} 폴더 삭제`} title={`${folder.name} 폴더 삭제`} onClick={() => { setSelectedFolder(folder); setError(""); dialogRef.current?.showModal(); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 3h4m-8 4 1 14h10l1-14M10 11v6m4-6v6" /></svg>
-              </button>
-            </div>}
+              </button>}
+            </div>
           </div>
         ))}
       </nav>
@@ -68,8 +75,8 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
           <input id="edit-folder-name" className={styles.modalInput} value={editName} onChange={(event) => { setEditName(event.target.value); setEditError(""); }} maxLength={40} required autoFocus />
           {editError && <p className={styles.formError} role="alert">{editError}</p>}
           <div className={styles.modalActions}>
-            <button className={styles.cancelButton} type="button" onClick={() => editDialogRef.current?.close()}>취소</button>
-            <button className={styles.saveButton} type="submit">저장</button>
+            <button className={styles.cancelButton} type="button" disabled={savingEdit} onClick={() => editDialogRef.current?.close()}>취소</button>
+            <button className={styles.saveButton} type="submit" disabled={savingEdit}>저장</button>
           </div>
         </form>
       </dialog>
