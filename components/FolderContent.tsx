@@ -2,27 +2,16 @@
 
 import Link from "next/link";
 import LinkGrid from "./LinkGrid";
-import { folders, links } from "../lib/bookmarks";
 import { useFolders } from "./FolderProvider";
-import { useDatabaseLinks, useDeletedLinks, useLinkEdits, useSavedLinks } from "./useSavedLinks";
+import { useDatabaseLinks } from "./useSavedLinks";
 import Sidebar from "./Sidebar";
 import styles from "../app/page.module.css";
 
 export default function FolderContent({ folderId }: { folderId: string }) {
   const { allFolders, ready } = useFolders();
-  const savedLinks = useSavedLinks();
   const databaseLinks = useDatabaseLinks();
-  const deletedLinks = useDeletedLinks();
-  const edits = useLinkEdits();
   const folder = allFolders.find((item) => item.id === folderId);
-  const folderLinks = [
-    ...links.filter((link) => !deletedLinks.includes(link.url))
-      .map((link) => ({ ...link, ...edits[link.url] }))
-      .filter((link) => (link.folderId ?? folders.find((folder) => folder.name === link.category)?.id) === folderId),
-    ...savedLinks.filter((link) => link.folderId === folderId)
-      .map((link) => ({ ...link, dbId: databaseLinks.find((item) => item.url === link.url)?.dbId ?? link.dbId })),
-    ...databaseLinks.filter((link) => link.folderId === folderId && !savedLinks.some((saved) => saved.url === link.url)),
-  ];
+  const folderLinks = databaseLinks.filter((link) => link.folderId === folderId);
 
   return (
     <div className={styles.content}>

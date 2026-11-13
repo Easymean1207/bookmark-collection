@@ -3,16 +3,11 @@ import { Suspense } from "react";
 import FolderContent from "../../../components/FolderContent";
 import Header from "../../../components/Header";
 import Sidebar from "../../../components/Sidebar";
-import { folders } from "../../../lib/bookmarks";
 import styles from "../../page.module.css";
-
-export function generateStaticParams() {
-  return folders.map((folder) => ({ folderId: folder.id }));
-}
 
 async function FolderRouteContent({ params }: { params: PageProps<"/folder/[folderId]">["params"] }) {
   const { folderId } = await params;
-  if (!folders.some((folder) => folder.id === folderId) && !folderId.startsWith("custom-") && !/^db-[1-9]\d*$/.test(folderId)) notFound();
+  if (!/^db-[1-9]\d*$/.test(folderId)) notFound();
   return <FolderContent folderId={folderId} />;
 }
 

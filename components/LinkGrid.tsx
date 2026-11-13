@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import LinkCard from "./LinkCard";
 import { useFolders } from "./FolderProvider";
 import { deleteLink, editLink } from "./useSavedLinks";
-import { folders } from "../lib/bookmarks";
 import type { LinkItem } from "../lib/bookmarks";
 import styles from "../app/page.module.css";
 
@@ -21,10 +20,12 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
   const [editError, setEditError] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
   const savingEditRef = useRef(false);
+  const [deleting, setDeleting] = useState(false);
+  const deletingRef = useRef(false);
 
   function openEdit(link: LinkItem) {
     setEditingLink(link);
-    setEditFolderId(link.folderId ?? folders.find((folder) => folder.name === link.category)?.id ?? "");
+    setEditFolderId(link.folderId ?? "");
     setEditTitle(link.title);
     setEditDescription(link.description);
     setEditError("");
@@ -49,19 +50,24 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
     }
   }
 
-  function confirmDelete(event: React.FormEvent<HTMLFormElement>) {
+  async function confirmDelete(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedLink) return;
+    if (!selectedLink || deletingRef.current) return;
+    deletingRef.current = true;
+    setDeleting(true);
     try {
-      deleteLink(selectedLink.url);
+      await deleteLink(selectedLink);
       dialogRef.current?.close();
     } catch {
       setError("링크를 삭제하지 못했습니다.");
+    } finally {
+      deletingRef.current = false;
+      setDeleting(false);
     }
   }
 
   return <>
-    <div className={styles.grid} aria-label="등록된 링크">{links.map((link) => <LinkCard key={link.dbId ?? link.url} link={link} onEdit={() => openEdit(link)} onDelete={link.dbId ? undefined : () => { setSelectedLink(link); setError(""); dialogRef.current?.showModal(); }} />)}</div>
+    <div className={styles.grid} aria-label="등록된 링크">{links.map((link) => <LinkCard key={link.dbId ?? link.url} link={link} onEdit={() => openEdit(link)} onDelete={() => { setSelectedLink(link); setError(""); dialogRef.current?.showModal(); }} />)}</div>
     <dialog className={styles.folderDialog} ref={editDialogRef} aria-labelledby="edit-link-title" onClose={() => { setEditingLink(null); setEditError(""); }}>
       <form className={styles.modalForm} onSubmit={saveEdit}>
         <h2 id="edit-link-title">링크 수정</h2>
@@ -87,8 +93,8 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
         <p id="delete-link-description" className={styles.modalDescription}>“{selectedLink?.title}” 링크를 삭제합니다.</p>
         {error && <p className={styles.formError} role="alert">{error}</p>}
         <div className={styles.modalActions}>
-          <button className={styles.cancelButton} type="button" autoFocus onClick={() => dialogRef.current?.close()}>취소</button>
-          <button className={styles.dangerButton} type="submit">삭제</button>
+          <button className={styles.cancelButton} type="button" autoFocus disabled={deleting} onClick={() => dialogRef.current?.close()}>취소</button>
+          <button className={styles.dangerButton} type="submit" disabled={deleting}>삭제</button>
         </div>
       </form>
     </dialog>

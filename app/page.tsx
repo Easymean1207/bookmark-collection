@@ -3,18 +3,11 @@
 import Header from "../components/Header";
 import LinkGrid from "../components/LinkGrid";
 import Sidebar from "../components/Sidebar";
-import { useDatabaseLinks, useDeletedLinks, useLinkEdits, useSavedLinks } from "../components/useSavedLinks";
-import { links } from "../lib/bookmarks";
+import { useDatabaseLinks } from "../components/useSavedLinks";
 import styles from "./page.module.css";
 
 export default function Home() {
-  const savedLinks = useSavedLinks();
-  const databaseLinks = useDatabaseLinks();
-  const deletedLinks = useDeletedLinks();
-  const edits = useLinkEdits();
-  const allLinks = [...links.filter((link) => !deletedLinks.includes(link.url)).map((link) => ({ ...link, ...edits[link.url] })),
-    ...savedLinks.map((link) => ({ ...link, dbId: databaseLinks.find((item) => item.url === link.url)?.dbId ?? link.dbId })),
-    ...databaseLinks.filter((link) => !savedLinks.some((saved) => saved.url === link.url))];
+  const allLinks = useDatabaseLinks();
   return (
     <div className={styles.shell}>
       <Header />

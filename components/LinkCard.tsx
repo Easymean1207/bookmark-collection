@@ -1,6 +1,5 @@
 "use client";
 
-import { folders } from "../lib/bookmarks";
 import { useFolders } from "./FolderProvider";
 import styles from "../app/page.module.css";
 import type { LinkItem } from "../lib/bookmarks";
@@ -9,8 +8,7 @@ import { useState } from "react";
 export default function LinkCard({ link, onEdit, onDelete }: { link: LinkItem; onEdit?: () => void; onDelete?: () => void }) {
   const { allFolders } = useFolders();
   const [imageFailed, setImageFailed] = useState(false);
-  const originalFolder = folders.find((folder) => folder.name === link.category);
-  const category = allFolders.find((folder) => folder.id === (link.folderId ?? originalFolder?.id))?.name ?? link.category;
+  const category = allFolders.find((folder) => folder.id === link.folderId)?.name ?? link.category;
   return (
     <div className={`${styles.card} linkCard`}>
       <a className={styles.cardLink} href={link.url} target="_blank" rel="noopener noreferrer">

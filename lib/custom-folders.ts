@@ -37,18 +37,6 @@ export function parseFolderStore(raw: string | null): FolderStore {
   }
 }
 
-export function deleteFolder(store: FolderStore, folderId: string, staticIds: string[]): FolderStore {
-  if (staticIds.includes(folderId) && !store.deleted.includes(folderId)) {
-    const renamed = { ...store.renamed };
-    delete renamed[folderId];
-    return { ...store, deleted: [...store.deleted, folderId], renamed };
-  }
-  if (store.added.some((folder) => folder.id === folderId)) {
-    return { ...store, added: store.added.filter((folder) => folder.id !== folderId) };
-  }
-  throw new Error("폴더를 찾을 수 없습니다.");
-}
-
 export function addCustomFolder(existing: CustomFolder[], name: string, id: string): CustomFolder[] {
   const trimmed = name.trim();
   if (!trimmed) throw new Error("폴더 이름을 입력해 주세요.");
