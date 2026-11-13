@@ -19,6 +19,8 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
   const [editError, setEditError] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
   const savingEditRef = useRef(false);
+  const [deleting, setDeleting] = useState(false);
+  const deletingRef = useRef(false);
 
   async function saveEdit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,15 +40,21 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
     }
   }
 
-  function confirmDelete(event: React.FormEvent<HTMLFormElement>) {
+  async function confirmDelete(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedFolder) return;
+    if (!selectedFolder || deletingRef.current) return;
+    const folderId = selectedFolder.id;
+    deletingRef.current = true;
+    setDeleting(true);
     try {
-      deleteFolder(selectedFolder.id);
+      await deleteFolder(folderId);
       dialogRef.current?.close();
-      if (activeFolderId === selectedFolder.id) router.push("/");
+      if (activeFolderId === folderId) router.push("/");
     } catch {
       setError("폴더를 삭제하지 못했습니다.");
+    } finally {
+      deletingRef.current = false;
+      setDeleting(false);
     }
   }
 
@@ -61,9 +69,9 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
               <button className={styles.editButton} type="button" aria-label={`${folder.name} 폴더 수정`} title={`${folder.name} 폴더 수정`} onClick={() => { setEditingFolder(folder); setEditName(folder.name); setEditError(""); editDialogRef.current?.showModal(); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 5 4 4M4 20l4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16z" /></svg>
               </button>
-              {!folder.id.startsWith("db-") && <button className={styles.deleteButton} type="button" aria-label={`${folder.name} 폴더 삭제`} title={`${folder.name} 폴더 삭제`} onClick={() => { setSelectedFolder(folder); setError(""); dialogRef.current?.showModal(); }}>
+              <button className={styles.deleteButton} type="button" aria-label={`${folder.name} 폴더 삭제`} title={`${folder.name} 폴더 삭제`} onClick={() => { setSelectedFolder(folder); setError(""); dialogRef.current?.showModal(); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 3h4m-8 4 1 14h10l1-14M10 11v6m4-6v6" /></svg>
-              </button>}
+              </button>
             </div>
           </div>
         ))}
@@ -86,8 +94,8 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
           <p className={styles.modalDescription}>“{selectedFolder?.name}” 폴더를 삭제합니다. 저장된 링크는 전체 목록에 남습니다.</p>
           {error && <p className={styles.formError} role="alert">{error}</p>}
           <div className={styles.modalActions}>
-            <button className={styles.cancelButton} type="button" autoFocus onClick={() => dialogRef.current?.close()}>취소</button>
-            <button className={styles.dangerButton} type="submit">삭제</button>
+            <button className={styles.cancelButton} type="button" autoFocus disabled={deleting} onClick={() => dialogRef.current?.close()}>취소</button>
+            <button className={styles.dangerButton} type="submit" disabled={deleting}>삭제</button>
           </div>
         </form>
       </dialog>

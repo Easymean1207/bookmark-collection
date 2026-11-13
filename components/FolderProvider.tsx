@@ -31,7 +31,7 @@ const FolderContext = createContext<{
   allFolders: CustomFolder[];
   ready: boolean;
   addFolder: (name: string) => Promise<void>;
-  deleteFolder: (id: string) => void;
+  deleteFolder: (id: string) => Promise<void>;
   renameFolder: (id: string, name: string) => Promise<void>;
 } | null>(null);
 
@@ -65,7 +65,14 @@ export function FolderProvider({ children }: { children: React.ReactNode }) {
     setDatabaseFolders((current) => [...(current ?? []), { id: `db-${data.id}`, name: data.name }]);
   }
 
-  function deleteFolder(id: string) {
+  async function deleteFolder(id: string) {
+    if (id.startsWith("db-")) {
+      const { error } = await createClient().from("folders")
+        .delete().eq("id", id.slice(3)).select("id").single();
+      if (error) throw error;
+      setDatabaseFolders((current) => current?.filter((folder) => folder.id !== id) ?? []);
+      return;
+    }
     const next = removeFolder(saved, id, folders.map((folder) => folder.id));
     localStorage.setItem(storageKey, JSON.stringify(next));
     window.dispatchEvent(new Event(changeEvent));
