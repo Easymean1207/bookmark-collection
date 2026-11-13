@@ -11,8 +11,13 @@
 .addButton:hover, .saveButton:hover { background: var(--accent-hover); }
 .addButton:active, .saveButton:active { transform: scale(.98); }
 .content { display: grid; grid-template-columns: 224px minmax(0, 1fr); max-width: 1440px; min-height: calc(100vh - 72px); margin: auto; }
-.sidebar { padding: 48px 16px 24px 24px; }
+.sidebar { display: flex; flex-direction: column; padding: 48px 16px 24px 24px; }
 .folderNav { display: grid; gap: 5px; }
+.logoutButton { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; margin-top: auto; padding: 0 16px; border: 0; border-radius: 12px; color: var(--text-sub); background: transparent; font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; transition: color .2s ease, background .2s ease; }
+.logoutButton svg { width: 18px; height: 18px; flex: none; }
+.logoutButton:hover:not(:disabled) { color: #a82032; background: #ffe1e6; }
+.logoutButton:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.logoutButton:disabled { opacity: .5; cursor: wait; }
 .folderRow { position: relative; }
 .folder { min-height: 44px; display: flex; align-items: center; min-width: 0; padding: 0 80px 0 16px; border-radius: 12px; color: var(--text-sub); font-size: 15px; font-weight: 600; text-decoration: none; transition: color .2s ease, background .2s ease; }
 .folderName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

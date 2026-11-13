@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { useFolders } from "./FolderProvider";
 import type { CustomFolder } from "../lib/custom-folders";
+import { createClient } from "../utils/supabase/client";
 import styles from "../app/page.module.css";
 
 export default function Sidebar({ activeFolderId }: { activeFolderId?: string | null }) {
@@ -21,6 +22,21 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
   const savingEditRef = useRef(false);
   const [deleting, setDeleting] = useState(false);
   const deletingRef = useRef(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
+
+  async function logout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError("");
+    try {
+      await createClient().auth.signOut({ scope: "local" });
+      window.location.replace("/login");
+    } catch {
+      setLogoutError("로그아웃하지 못했습니다. 다시 시도해 주세요.");
+      setLoggingOut(false);
+    }
+  }
 
   async function saveEdit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -99,6 +115,11 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
           </div>
         </form>
       </dialog>
+      {logoutError && <p className={styles.formError} role="alert">{logoutError}</p>}
+      <button className={styles.logoutButton} type="button" onClick={logout} disabled={loggingOut}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5M21 12H9" /></svg>
+        {loggingOut ? "로그아웃 중..." : "로그아웃"}
+      </button>
     </aside>
   );
 }
