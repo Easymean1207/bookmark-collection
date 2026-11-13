@@ -110,6 +110,7 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
           </div>}
           <button type="submit" className={styles.submit} disabled={!email.trim() || !password || (signup && !confirm) || pending || success}>{success ? (signup ? "회원가입 완료" : "로그인 완료") : pending ? (signup ? "가입 중..." : "로그인 중...") : signup ? "회원가입" : "로그인"}</button>
         </form>
+        {!signup && <Link href="/forgot-password" className={styles.recoveryLink}>비밀번호 찾기</Link>}
         <p className={styles.footer}>
           {signup ? "이미 계정이 있나요?" : "계정이 없나요?"}{" "}
           <Link href={signup ? "/login" : "/signup"} className={styles.switch}>{signup ? "로그인" : "회원가입"}</Link>
