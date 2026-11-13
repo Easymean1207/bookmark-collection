@@ -1,6 +1,7 @@
 import type { LinkItem } from "./bookmarks";
 
 export type SavedLink = LinkItem & { folderId: string };
+export type LinkEdit = { folderId: string; title: string; description: string };
 
 function webUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
@@ -46,5 +47,39 @@ export function removeLink(saved: SavedLink[], deleted: string[], url: string, b
   if (saved.some((link) => link.url === url)) {
     return { saved: saved.filter((link) => link.url !== url), deleted };
   }
+  throw new Error("링크를 찾을 수 없습니다.");
+}
+
+export function parseLinkEdits(raw: string | null): Record<string, LinkEdit> {
+  try {
+    const value: unknown = JSON.parse(raw ?? "{}");
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(Object.entries(value).filter(([url, edit]) =>
+      webUrl(url) && edit !== null && typeof edit === "object" &&
+      typeof (edit as LinkEdit).folderId === "string" && (edit as LinkEdit).folderId.length > 0 &&
+      typeof (edit as LinkEdit).title === "string" && (edit as LinkEdit).title.trim().length > 0 && (edit as LinkEdit).title.length <= 200 &&
+      typeof (edit as LinkEdit).description === "string" && (edit as LinkEdit).description.length <= 1000)
+      .map(([url, edit]) => [url, {
+        folderId: (edit as LinkEdit).folderId,
+        title: (edit as LinkEdit).title,
+        description: (edit as LinkEdit).description,
+      }]));
+  } catch {
+    return {};
+  }
+}
+
+export function updateLink(saved: SavedLink[], edits: Record<string, LinkEdit>, url: string, change: LinkEdit, availableFolders: { id: string; name: string }[], builtInUrls: string[]) {
+  const folder = availableFolders.find((item) => item.id === change.folderId);
+  const title = change.title.trim();
+  const description = change.description.trim();
+  if (!folder) throw new Error("폴더를 선택해 주세요.");
+  if (!title || title.length > 200) throw new Error("제목을 200자 이내로 입력해 주세요.");
+  if (description.length > 1000) throw new Error("설명은 1000자 이내로 입력해 주세요.");
+  const next = { folderId: folder.id, title, description };
+  if (builtInUrls.includes(url)) return { saved, edits: { ...edits, [url]: next } };
+  if (saved.some((link) => link.url === url)) return {
+    saved: saved.map((link) => link.url === url ? { ...link, ...next, category: folder.name } : link), edits,
+  };
   throw new Error("링크를 찾을 수 없습니다.");
 }

@@ -2,10 +2,10 @@
 
 * { box-sizing: border-box; }
 
-.linkCard:hover .linkCardDelete, .linkCard:focus-within .linkCardDelete { opacity: 1; pointer-events: auto; }
+.linkCard:hover .linkCardActions, .linkCard:focus-within .linkCardActions { opacity: 1; pointer-events: auto; }
 .linkCard:hover a::after, .linkCard:focus-within a::after { opacity: 0; }
 @media (hover: none) {
-  .linkCard .linkCardDelete { opacity: 1; pointer-events: auto; }
+  .linkCard .linkCardActions { opacity: 1; pointer-events: auto; }
   .linkCard a::after { opacity: 0; }
 }
 

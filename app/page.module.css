@@ -35,7 +35,7 @@
 .card:hover { box-shadow: 0 8px 24px rgba(25, 31, 40, .12); transform: translateY(-2px); }
 .cardLink { display: flex; flex: 1; flex-direction: column; min-width: 0; color: inherit; text-decoration: none; }
 .cardLink::after { content: "↗"; position: absolute; top: 22px; right: 24px; color: #8b95a1; font-size: 19px; line-height: 1; transition: opacity .2s ease; }
-.cardDelete { position: absolute; top: 16px; right: 16px; opacity: 0; pointer-events: none; }
+.cardActions { position: absolute; top: 16px; right: 16px; display: flex; gap: 2px; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 .thumbnail { display: block; width: 100%; aspect-ratio: 16 / 9; margin-bottom: 18px; border-radius: 12px; object-fit: cover; background: var(--background); }
 .category { align-self: flex-start; padding: 5px 10px; border-radius: 8px; color: var(--accent-hover); background: var(--accent-soft); font-size: 12px; font-weight: 700; line-height: 1.2; }
 .card h2 { margin: 18px 0 8px; padding-right: 12px; font-size: 18px; font-weight: 700; letter-spacing: -.025em; line-height: 1.4; }
@@ -50,6 +50,7 @@
 .modalDescription { margin: 0; color: var(--text-sub); font-size: 14px; line-height: 1.5; }
 .modalForm label { font-size: 14px; font-weight: 700; }
 .modalInput { width: 100%; min-height: 50px; padding: 0 16px; border: 0; border-radius: 12px; color: var(--text); background: var(--background); font: inherit; font-size: 15px; }
+.modalTextarea { min-height: 110px; padding: 14px 16px; resize: vertical; }
 .modalInput::placeholder { color: #8b95a1; }
 .formError { margin: 0; color: #f04452; font-size: 13px; }
 .modalActions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }

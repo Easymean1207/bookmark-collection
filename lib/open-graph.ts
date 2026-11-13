@@ -82,6 +82,7 @@ async function readPage(url: URL): Promise<{ html: string; url: URL }> {
       throw new Error("공개 웹 주소만 사용할 수 있습니다.");
     }
     const pinned = addresses[0];
+    // shortcut: Unreadable public pages use hostname metadata; add per-site extraction if richer metadata is required.
     const response = await new Promise<{ status: number; location?: string; html?: string }>((resolve, reject) => {
       const request = (url.protocol === "https:" ? https : http).get(url, {
         headers: { Accept: "text/html,application/xhtml+xml", "Accept-Encoding": "identity", "User-Agent": "BookmarkCollection/1.0" },
@@ -115,7 +116,7 @@ async function readPage(url: URL): Promise<{ html: string; url: URL }> {
         res.on("error", reject);
       });
       request.on("error", reject);
-    });
+    }).catch(() => ({ status: 200, html: "", location: undefined }));
     if (response.location) {
       url = validateTarget(new URL(response.location, url).href);
       continue;
