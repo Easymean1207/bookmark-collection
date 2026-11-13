@@ -10,16 +10,24 @@ export default function Header() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
-  function saveFolder(event: React.FormEvent<HTMLFormElement>) {
+  async function saveFolder(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
     try {
-      addFolder(name);
+      await addFolder(name);
       dialogRef.current?.close();
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "";
       setError(message === "폴더 이름을 입력해 주세요." || message === "이미 있는 폴더 이름입니다."
         ? message : "폴더를 저장하지 못했습니다.");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   }
 
@@ -39,8 +47,8 @@ export default function Header() {
           <input id="folder-name" className={styles.modalInput} value={name} onChange={(event) => { setName(event.target.value); setError(""); }} maxLength={40} required autoFocus placeholder="폴더 이름을 입력하세요" />
           {error && <p className={styles.formError} role="alert">{error}</p>}
           <div className={styles.modalActions}>
-            <button className={styles.cancelButton} type="button" onClick={() => dialogRef.current?.close()}>취소</button>
-            <button className={styles.saveButton} type="submit">저장</button>
+            <button className={styles.cancelButton} type="button" disabled={saving} onClick={() => dialogRef.current?.close()}>취소</button>
+            <button className={styles.saveButton} type="submit" disabled={saving}>저장</button>
           </div>
         </form>
       </dialog>

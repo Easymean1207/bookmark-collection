@@ -50,14 +50,14 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
         {allFolders.map((folder) => (
           <div className={styles.folderRow} key={folder.id}>
             <Link className={`${styles.folder} ${activeFolderId === folder.id ? styles.folderActive : ""}`} href={`/folder/${folder.id}`} aria-current={activeFolderId === folder.id ? "page" : undefined}><span className={styles.folderName}>{folder.name}</span></Link>
-            <div className={styles.folderActions}>
+            {!folder.id.startsWith("db-") && <div className={styles.folderActions}>
               <button className={styles.editButton} type="button" aria-label={`${folder.name} 폴더 수정`} title={`${folder.name} 폴더 수정`} onClick={() => { setEditingFolder(folder); setEditName(folder.name); setEditError(""); editDialogRef.current?.showModal(); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 5 4 4M4 20l4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16z" /></svg>
               </button>
               <button className={styles.deleteButton} type="button" aria-label={`${folder.name} 폴더 삭제`} title={`${folder.name} 폴더 삭제`} onClick={() => { setSelectedFolder(folder); setError(""); dialogRef.current?.showModal(); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 3h4m-8 4 1 14h10l1-14M10 11v6m4-6v6" /></svg>
               </button>
-            </div>
+            </div>}
           </div>
         ))}
       </nav>

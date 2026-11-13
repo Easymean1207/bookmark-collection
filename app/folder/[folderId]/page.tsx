@@ -12,7 +12,7 @@ export function generateStaticParams() {
 
 async function FolderRouteContent({ params }: { params: PageProps<"/folder/[folderId]">["params"] }) {
   const { folderId } = await params;
-  if (!folders.some((folder) => folder.id === folderId) && !folderId.startsWith("custom-")) notFound();
+  if (!folders.some((folder) => folder.id === folderId) && !folderId.startsWith("custom-") && !/^db-[1-9]\d*$/.test(folderId)) notFound();
   return <FolderContent folderId={folderId} />;
 }
 
