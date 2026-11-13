@@ -12,7 +12,8 @@ export default function Home() {
   const databaseLinks = useDatabaseLinks();
   const deletedLinks = useDeletedLinks();
   const edits = useLinkEdits();
-  const allLinks = [...links.filter((link) => !deletedLinks.includes(link.url)).map((link) => ({ ...link, ...edits[link.url] })), ...savedLinks,
+  const allLinks = [...links.filter((link) => !deletedLinks.includes(link.url)).map((link) => ({ ...link, ...edits[link.url] })),
+    ...savedLinks.map((link) => ({ ...link, dbId: databaseLinks.find((item) => item.url === link.url)?.dbId ?? link.dbId })),
     ...databaseLinks.filter((link) => !savedLinks.some((saved) => saved.url === link.url))];
   return (
     <div className={styles.shell}>

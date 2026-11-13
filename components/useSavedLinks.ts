@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { links } from "../lib/bookmarks";
 import type { LinkItem } from "../lib/bookmarks";
-import { appendSavedLink, parseDeletedLinks, parseLinkEdits, parseSavedLinks, removeLink, updateLink, type LinkEdit, type SavedLink } from "../lib/saved-links";
+import { appendSavedLink, parseDeletedLinks, parseLinkEdits, parseSavedLinks, removeLink, syncDatabaseLinkFolder, updateLink, type LinkEdit, type SavedLink } from "../lib/saved-links";
 import { createClient } from "../utils/supabase/client";
 
 const storageKey = "bookmark-collection-links";
@@ -40,7 +40,7 @@ export function useDatabaseLinks() {
   const [databaseLinks, setDatabaseLinks] = useState<LinkItem[]>([]);
   useEffect(() => {
     let active = true;
-    createClient().from("links").select("id, url, title, description, thumbnail_url, folder_id")
+    function load() { createClient().from("links").select("id, url, title, description, thumbnail_url, folder_id")
       .order("created_at").then(({ data, error }) => {
         if (!active) return;
         if (error) { console.error("Failed to load links", error); return; }
@@ -53,8 +53,10 @@ export function useDatabaseLinks() {
           folderId: link.folder_id == null ? undefined : `db-${link.folder_id}`,
           category: "미분류",
         })));
-      });
-    return () => { active = false; };
+      }); }
+    load();
+    window.addEventListener(changeEvent, load);
+    return () => { active = false; window.removeEventListener(changeEvent, load); };
   }, []);
   return databaseLinks;
 }
@@ -80,9 +82,28 @@ export function deleteLink(url: string) {
   window.dispatchEvent(new Event(changeEvent));
 }
 
-export function editLink(url: string, change: LinkEdit, availableFolders: { id: string; name: string }[]) {
+export async function editLink(link: LinkItem, change: LinkEdit, availableFolders: { id: string; name: string }[]) {
+  const url = link.url;
   const builtInUrls = links.map((link) => link.url);
-  const next = updateLink(parseSavedLinks(getSnapshot()), parseLinkEdits(getEditsSnapshot()), url, change, availableFolders, builtInUrls);
+  const saved = parseSavedLinks(getSnapshot());
+  if (link.dbId) {
+    const folder = availableFolders.find((item) => item.id === change.folderId);
+    const title = change.title.trim();
+    const description = change.description.trim();
+    if (change.folderId && !folder) throw new Error("폴더를 선택해 주세요.");
+    if (!title || title.length > 200) throw new Error("제목을 200자 이내로 입력해 주세요.");
+    if (description.length > 1000) throw new Error("설명은 1000자 이내로 입력해 주세요.");
+    const { error } = await createClient().from("links").update({
+      title, description, folder_id: folder?.id.startsWith("db-") ? folder.id.slice(3) : null,
+    }).eq("id", link.dbId.slice(8)).select("id").single();
+    if (error) throw error;
+    const existing = saved.some((item) => item.url === url);
+    if (existing || (folder && !folder.id.startsWith("db-")))
+      localStorage.setItem(storageKey, JSON.stringify(syncDatabaseLinkFolder(saved, link, folder, title, description)));
+    window.dispatchEvent(new Event(changeEvent));
+    return;
+  }
+  const next = updateLink(saved, parseLinkEdits(getEditsSnapshot()), url, change, availableFolders, builtInUrls);
   const builtIn = builtInUrls.includes(url);
   localStorage.setItem(builtIn ? editsKey : storageKey, JSON.stringify(builtIn ? next.edits : next.saved));
   window.dispatchEvent(new Event(changeEvent));

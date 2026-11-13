@@ -19,6 +19,8 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editError, setEditError] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const savingEditRef = useRef(false);
 
   function openEdit(link: LinkItem) {
     setEditingLink(link);
@@ -29,16 +31,21 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
     editDialogRef.current?.showModal();
   }
 
-  function saveEdit(event: React.FormEvent<HTMLFormElement>) {
+  async function saveEdit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editingLink) return;
+    if (!editingLink || savingEditRef.current) return;
+    savingEditRef.current = true;
+    setSavingEdit(true);
     try {
-      editLink(editingLink.url, { folderId: editFolderId, title: editTitle, description: editDescription }, allFolders);
+      await editLink(editingLink, { folderId: editFolderId, title: editTitle, description: editDescription }, allFolders);
       editDialogRef.current?.close();
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "";
       setEditError(["폴더를 선택해 주세요.", "제목을 200자 이내로 입력해 주세요.", "설명은 1000자 이내로 입력해 주세요."].includes(message)
         ? message : "링크를 수정하지 못했습니다.");
+    } finally {
+      savingEditRef.current = false;
+      setSavingEdit(false);
     }
   }
 
@@ -54,13 +61,13 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
   }
 
   return <>
-    <div className={styles.grid} aria-label="등록된 링크">{links.map((link) => <LinkCard key={link.dbId ?? link.url} link={link} onEdit={link.dbId ? undefined : () => openEdit(link)} onDelete={link.dbId ? undefined : () => { setSelectedLink(link); setError(""); dialogRef.current?.showModal(); }} />)}</div>
+    <div className={styles.grid} aria-label="등록된 링크">{links.map((link) => <LinkCard key={link.dbId ?? link.url} link={link} onEdit={() => openEdit(link)} onDelete={link.dbId ? undefined : () => { setSelectedLink(link); setError(""); dialogRef.current?.showModal(); }} />)}</div>
     <dialog className={styles.folderDialog} ref={editDialogRef} aria-labelledby="edit-link-title" onClose={() => { setEditingLink(null); setEditError(""); }}>
       <form className={styles.modalForm} onSubmit={saveEdit}>
         <h2 id="edit-link-title">링크 수정</h2>
         <label htmlFor="edit-link-folder">폴더</label>
-        <select id="edit-link-folder" className={styles.modalInput} value={editFolderId} onChange={(event) => setEditFolderId(event.target.value)} required autoFocus>
-          <option value="" disabled>폴더를 선택하세요</option>
+        <select id="edit-link-folder" className={styles.modalInput} value={editFolderId} onChange={(event) => setEditFolderId(event.target.value)} required={!editingLink?.dbId} autoFocus>
+          <option value="" disabled={!!editingLink?.folderId}>{editingLink?.dbId ? "미분류" : "폴더를 선택하세요"}</option>
           {allFolders.map((folder) => <option key={folder.id} value={folder.id}>{folder.name}</option>)}
         </select>
         <label htmlFor="edit-link-name">제목</label>
@@ -69,8 +76,8 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
         <textarea id="edit-link-description" className={`${styles.modalInput} ${styles.modalTextarea}`} value={editDescription} onChange={(event) => setEditDescription(event.target.value)} maxLength={1000} />
         {editError && <p className={styles.formError} role="alert">{editError}</p>}
         <div className={styles.modalActions}>
-          <button className={styles.cancelButton} type="button" onClick={() => editDialogRef.current?.close()}>취소</button>
-          <button className={styles.saveButton} type="submit">저장</button>
+          <button className={styles.cancelButton} type="button" disabled={savingEdit} onClick={() => editDialogRef.current?.close()}>취소</button>
+          <button className={styles.saveButton} type="submit" disabled={savingEdit}>저장</button>
         </div>
       </form>
     </dialog>

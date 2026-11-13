@@ -19,7 +19,8 @@ export default function FolderContent({ folderId }: { folderId: string }) {
     ...links.filter((link) => !deletedLinks.includes(link.url))
       .map((link) => ({ ...link, ...edits[link.url] }))
       .filter((link) => (link.folderId ?? folders.find((folder) => folder.name === link.category)?.id) === folderId),
-    ...savedLinks.filter((link) => link.folderId === folderId),
+    ...savedLinks.filter((link) => link.folderId === folderId)
+      .map((link) => ({ ...link, dbId: databaseLinks.find((item) => item.url === link.url)?.dbId ?? link.dbId })),
     ...databaseLinks.filter((link) => link.folderId === folderId && !savedLinks.some((saved) => saved.url === link.url)),
   ];
 

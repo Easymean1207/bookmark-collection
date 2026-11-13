@@ -83,3 +83,11 @@ export function updateLink(saved: SavedLink[], edits: Record<string, LinkEdit>, 
   };
   throw new Error("링크를 찾을 수 없습니다.");
 }
+
+export function syncDatabaseLinkFolder(saved: SavedLink[], link: LinkItem, folder: { id: string; name: string } | undefined, title: string, description: string): SavedLink[] {
+  if (!folder || folder.id.startsWith("db-")) return saved.filter((item) => item.url !== link.url);
+  const updated = { ...link, folderId: folder.id, category: folder.name, title, description };
+  return saved.some((item) => item.url === link.url)
+    ? saved.map((item) => item.url === link.url ? { ...item, ...updated } : item)
+    : appendSavedLink(saved, updated, []);
+}

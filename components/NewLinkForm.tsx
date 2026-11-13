@@ -38,16 +38,16 @@ export default function NewLinkForm() {
       if (!response.ok) throw new Error(data.error ?? "링크 정보를 가져오지 못했습니다.");
       const link = { ...data, folderId, category: folder.name };
       appendSavedLink(savedLinks, link, links.map((item) => item.url));
-      const { error: insertError } = await createClient().from("links").insert({
+      const { data: inserted, error: insertError } = await createClient().from("links").insert({
         url: data.url,
         title: data.title,
         description: data.description,
         thumbnail_url: data.thumbnail,
         // shortcut: Existing local folders have no database ID; migrate them when cross-device folder assignment is needed.
         folder_id: folderId.startsWith("db-") ? folderId.slice(3) : null,
-      });
+      }).select("id").single();
       if (insertError) throw insertError;
-      if (!folderId.startsWith("db-")) saveLink(link);
+      if (!folderId.startsWith("db-")) saveLink({ ...link, dbId: `db-link-${inserted.id}` });
       router.push(`/folder/${folderId}`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "링크를 저장하지 못했습니다.");
