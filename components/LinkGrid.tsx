@@ -54,7 +54,7 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
   }
 
   return <>
-    <div className={styles.grid} aria-label="등록된 링크">{links.map((link) => <LinkCard key={link.url} link={link} onEdit={() => openEdit(link)} onDelete={() => { setSelectedLink(link); setError(""); dialogRef.current?.showModal(); }} />)}</div>
+    <div className={styles.grid} aria-label="등록된 링크">{links.map((link) => <LinkCard key={link.dbId ?? link.url} link={link} onEdit={link.dbId ? undefined : () => openEdit(link)} onDelete={link.dbId ? undefined : () => { setSelectedLink(link); setError(""); dialogRef.current?.showModal(); }} />)}</div>
     <dialog className={styles.folderDialog} ref={editDialogRef} aria-labelledby="edit-link-title" onClose={() => { setEditingLink(null); setEditError(""); }}>
       <form className={styles.modalForm} onSubmit={saveEdit}>
         <h2 id="edit-link-title">링크 수정</h2>

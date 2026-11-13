@@ -1,24 +1,31 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useFolders } from "./FolderProvider";
-import { saveLink } from "./useSavedLinks";
+import { saveLink, useSavedLinks } from "./useSavedLinks";
+import { appendSavedLink } from "../lib/saved-links";
+import { links } from "../lib/bookmarks";
+import { createClient } from "../utils/supabase/client";
 import type { OpenGraph } from "../lib/open-graph";
 import styles from "../app/page.module.css";
 
 export default function NewLinkForm() {
   const { allFolders } = useFolders();
+  const savedLinks = useSavedLinks();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [error, setError] = useState("");
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (savingRef.current) return;
     const form = new FormData(event.currentTarget);
     const folderId = String(form.get("folder") ?? "");
     const folder = allFolders.find((item) => item.id === folderId);
     if (!folder) { setError("폴더를 선택해 주세요."); return; }
+    savingRef.current = true;
     setSaving(true);
     setError("");
     try {
@@ -29,11 +36,22 @@ export default function NewLinkForm() {
       });
       const data = await response.json() as OpenGraph & { error?: string };
       if (!response.ok) throw new Error(data.error ?? "링크 정보를 가져오지 못했습니다.");
-      saveLink({ ...data, folderId, category: folder.name });
+      const link = { ...data, folderId, category: folder.name };
+      appendSavedLink(savedLinks, link, links.map((item) => item.url));
+      const { error: insertError } = await createClient().from("links").insert({
+        url: data.url,
+        title: data.title,
+        description: data.description,
+        thumbnail_url: data.thumbnail,
+        // shortcut: Existing local folders have no database ID; migrate them when cross-device folder assignment is needed.
+        folder_id: folderId.startsWith("db-") ? folderId.slice(3) : null,
+      });
+      if (insertError) throw insertError;
+      if (!folderId.startsWith("db-")) saveLink(link);
       router.push(`/folder/${folderId}`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "링크를 저장하지 못했습니다.");
-    } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }

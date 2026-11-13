@@ -1,8 +1,10 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { links } from "../lib/bookmarks";
+import type { LinkItem } from "../lib/bookmarks";
 import { appendSavedLink, parseDeletedLinks, parseLinkEdits, parseSavedLinks, removeLink, updateLink, type LinkEdit, type SavedLink } from "../lib/saved-links";
+import { createClient } from "../utils/supabase/client";
 
 const storageKey = "bookmark-collection-links";
 const deletedKey = "bookmark-collection-deleted-links";
@@ -32,6 +34,29 @@ function getEditsSnapshot() {
 
 export function useSavedLinks() {
   return parseSavedLinks(useSyncExternalStore(subscribe, getSnapshot, () => null));
+}
+
+export function useDatabaseLinks() {
+  const [databaseLinks, setDatabaseLinks] = useState<LinkItem[]>([]);
+  useEffect(() => {
+    let active = true;
+    createClient().from("links").select("id, url, title, description, thumbnail_url, folder_id")
+      .order("created_at").then(({ data, error }) => {
+        if (!active) return;
+        if (error) { console.error("Failed to load links", error); return; }
+        setDatabaseLinks(data.map((link) => ({
+          dbId: `db-link-${link.id}`,
+          url: link.url,
+          title: link.title ?? link.url,
+          description: link.description ?? "",
+          thumbnail: link.thumbnail_url,
+          folderId: link.folder_id == null ? undefined : `db-${link.folder_id}`,
+          category: "미분류",
+        })));
+      });
+    return () => { active = false; };
+  }, []);
+  return databaseLinks;
 }
 
 export function useDeletedLinks() {

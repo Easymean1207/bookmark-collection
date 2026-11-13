@@ -4,13 +4,14 @@ import Link from "next/link";
 import LinkGrid from "./LinkGrid";
 import { folders, links } from "../lib/bookmarks";
 import { useFolders } from "./FolderProvider";
-import { useDeletedLinks, useLinkEdits, useSavedLinks } from "./useSavedLinks";
+import { useDatabaseLinks, useDeletedLinks, useLinkEdits, useSavedLinks } from "./useSavedLinks";
 import Sidebar from "./Sidebar";
 import styles from "../app/page.module.css";
 
 export default function FolderContent({ folderId }: { folderId: string }) {
   const { allFolders, ready } = useFolders();
   const savedLinks = useSavedLinks();
+  const databaseLinks = useDatabaseLinks();
   const deletedLinks = useDeletedLinks();
   const edits = useLinkEdits();
   const folder = allFolders.find((item) => item.id === folderId);
@@ -19,6 +20,7 @@ export default function FolderContent({ folderId }: { folderId: string }) {
       .map((link) => ({ ...link, ...edits[link.url] }))
       .filter((link) => (link.folderId ?? folders.find((folder) => folder.name === link.category)?.id) === folderId),
     ...savedLinks.filter((link) => link.folderId === folderId),
+    ...databaseLinks.filter((link) => link.folderId === folderId && !savedLinks.some((saved) => saved.url === link.url)),
   ];
 
   return (
