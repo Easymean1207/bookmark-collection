@@ -24,9 +24,12 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
 
   useEffect(() => {
     if (!success) return;
-    const timer = setTimeout(() => router.replace("/login"), 1000);
+    const timer = setTimeout(() => {
+      if (signup) router.replace("/login");
+      else window.location.replace("/");
+    }, 1000);
     return () => clearTimeout(timer);
-  }, [success, router]);
+  }, [success, router, signup]);
 
   useLayoutEffect(() => () => {
     setEmail("");
@@ -38,8 +41,8 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!signup || !email.trim() || !password || !confirm || pending) return;
-    if (password !== confirm) {
+    if (!email.trim() || !password || (signup && !confirm) || pending || success) return;
+    if (signup && password !== confirm) {
       setError("비밀번호가 일치하지 않습니다.");
       return;
     }
@@ -47,6 +50,20 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
     setPending(true);
     setError("");
     try {
+      if (!signup) {
+        const { data, error: loginError } = await createClient().auth.signInWithPassword({ email: email.trim(), password });
+        if (loginError || !data.session) {
+          const messages: Record<string, string> = {
+            invalid_credentials: "이메일 또는 비밀번호가 올바르지 않습니다.",
+            email_not_confirmed: "이메일 인증 후 로그인해 주세요.",
+            over_request_rate_limit: "로그인 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+          };
+          setError(messages[loginError?.code ?? ""] ?? "로그인에 실패했습니다. 다시 시도해 주세요.");
+          return;
+        }
+        setSuccess(true);
+        return;
+      }
       const { data, error: signupError } = await createClient().auth.signUp({ email: email.trim(), password });
       if (signupError) {
         const messages: Record<string, string> = {
@@ -66,7 +83,7 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
       }
       setSuccess(true);
     } catch {
-      setError("회원가입에 실패했습니다. 다시 시도해 주세요.");
+      setError(signup ? "회원가입에 실패했습니다. 다시 시도해 주세요." : "로그인에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setPending(false);
     }
@@ -75,7 +92,7 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
   return (
     <main className={styles.page}>
       {error && <div className={styles.toast} role="alert">{error}</div>}
-      {success && <div className={`${styles.toast} ${styles.toastSuccess}`} role="status">회원가입이 완료되었습니다.</div>}
+      {success && <div className={`${styles.toast} ${styles.toastSuccess}`} role="status">{signup ? "회원가입이 완료되었습니다." : "로그인에 성공했습니다."}</div>}
       <section className={styles.card}>
         <h1 className={styles.logo}>북마크 모음집</h1>
         <form className={styles.fields} onSubmit={submit} noValidate>
@@ -91,7 +108,7 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
             <label htmlFor="auth-password-confirm">비밀번호 확인</label>
             <input id="auth-password-confirm" type="password" autoComplete="new-password" placeholder="비밀번호를 다시 입력하세요" value={confirm} onChange={(event) => setConfirm(event.target.value)} />
           </div>}
-          <button type={signup ? "submit" : "button"} className={styles.submit} disabled={signup && (!email.trim() || !password || !confirm || pending || success)}>{signup ? (success ? "회원가입 완료" : pending ? "가입 중..." : "회원가입") : "로그인"}</button>
+          <button type="submit" className={styles.submit} disabled={!email.trim() || !password || (signup && !confirm) || pending || success}>{success ? (signup ? "회원가입 완료" : "로그인 완료") : pending ? (signup ? "가입 중..." : "로그인 중...") : signup ? "회원가입" : "로그인"}</button>
         </form>
         <p className={styles.footer}>
           {signup ? "이미 계정이 있나요?" : "계정이 없나요?"}{" "}
