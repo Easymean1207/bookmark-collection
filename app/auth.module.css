@@ -9,6 +9,9 @@
 .field input:focus-visible, .submit:focus-visible, .switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .submit { width: 100%; min-height: 50px; margin-top: 8px; padding: 0 20px; border: 0; border-radius: 12px; background: var(--accent); color: var(--surface); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; transition: background .2s ease; }
 .submit:hover { background: var(--accent-hover); }
+.submit:disabled { background: var(--text-sub); cursor: not-allowed; }
+.toast { position: fixed; z-index: 10; top: 24px; left: 50%; width: max-content; max-width: calc(100vw - 32px); padding: 14px 20px; transform: translateX(-50%); border-radius: 12px; background: #fff0f0; color: #b42318; box-shadow: 0 2px 12px rgba(25, 31, 40, .12); font-size: 14px; font-weight: 600; text-align: center; }
+.toastSuccess { background: #e8f8ef; color: #147d43; }
 .footer { margin: 20px 0 0; color: var(--text-sub); font-size: 14px; text-align: center; }
 .switch { color: var(--accent-hover); font-weight: 700; text-decoration: none; }
 .switch:hover { opacity: .8; }
