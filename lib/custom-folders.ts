@@ -1,6 +1,26 @@
 export type CustomFolder = { id: string; name: string };
 export type FolderStore = { added: CustomFolder[]; deleted: string[]; renamed: Record<string, string> };
 
+export function swapFolderPositions(folders: CustomFolder[], firstId: string, secondId: string): CustomFolder[] {
+  const first = folders.findIndex((folder) => folder.id === firstId);
+  const second = folders.findIndex((folder) => folder.id === secondId);
+  if (first < 0 || second < 0 || first === second) return folders;
+  const swapped = [...folders];
+  [swapped[first], swapped[second]] = [swapped[second], swapped[first]];
+  return swapped;
+}
+
+export function orderFolders(folders: CustomFolder[], rawOrder: string | null): CustomFolder[] {
+  try {
+    const saved: unknown = JSON.parse(rawOrder ?? "null");
+    if (!Array.isArray(saved)) return folders;
+    const positions = new Map(saved.filter((id): id is string => typeof id === "string").map((id, index) => [id, index]));
+    return [...folders].sort((a, b) => (positions.get(a.id) ?? folders.length) - (positions.get(b.id) ?? folders.length));
+  } catch {
+    return folders;
+  }
+}
+
 export function renameFolder(store: FolderStore, folderId: string, name: string, visibleFolders: CustomFolder[]): FolderStore {
   const trimmed = name.trim();
   if (!trimmed) throw new Error("폴더 이름을 입력해 주세요.");

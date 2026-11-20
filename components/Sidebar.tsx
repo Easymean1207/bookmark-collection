@@ -9,7 +9,7 @@ import { createClient } from "../utils/supabase/client";
 import styles from "../app/page.module.css";
 
 export default function Sidebar({ activeFolderId }: { activeFolderId?: string | null }) {
-  const { allFolders, deleteFolder, renameFolder } = useFolders();
+  const { allFolders, deleteFolder, renameFolder, swapFolders } = useFolders();
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const editDialogRef = useRef<HTMLDialogElement>(null);
@@ -24,6 +24,19 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
   const deletingRef = useRef(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
+  const [draggingFolderId, setDraggingFolderId] = useState<string | null>(null);
+  const [dropFolderId, setDropFolderId] = useState<string | null>(null);
+  const dragSourceRef = useRef<string | null>(null);
+
+  function folderAt(x: number, y: number) {
+    return document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-folder-id]")?.dataset.folderId ?? null;
+  }
+
+  function stopDragging() {
+    dragSourceRef.current = null;
+    setDraggingFolderId(null);
+    setDropFolderId(null);
+  }
 
   async function logout() {
     if (loggingOut) return;
@@ -79,7 +92,34 @@ export default function Sidebar({ activeFolderId }: { activeFolderId?: string | 
       <nav className={styles.folderNav} aria-label="북마크 폴더">
         <Link className={`${styles.folder} ${activeFolderId === undefined ? styles.folderActive : ""}`} href="/" aria-current={activeFolderId === undefined ? "page" : undefined}>All</Link>
         {allFolders.map((folder) => (
-          <div className={styles.folderRow} key={folder.id}>
+          <div className={`${styles.folderRow} ${dropFolderId === folder.id && draggingFolderId !== folder.id ? styles.folderDropTarget : ""} ${draggingFolderId === folder.id ? styles.folderDragging : ""}`} key={folder.id} data-folder-id={folder.id}>
+            <button className={styles.folderDragHandle} type="button" aria-label={`${folder.name} 폴더 위치 변경. 위아래 방향키로 이동하거나 드래그하세요.`} title="드래그하여 폴더 위치 변경" onPointerDown={(event) => {
+              if (event.button !== 0) return;
+              dragSourceRef.current = folder.id;
+              event.currentTarget.setPointerCapture(event.pointerId);
+              setDraggingFolderId(folder.id);
+            }} onPointerMove={(event) => {
+              if (!dragSourceRef.current) return;
+              setDropFolderId(folderAt(event.clientX, event.clientY));
+            }} onPointerUp={(event) => {
+              if (dragSourceRef.current) {
+                const targetId = folderAt(event.clientX, event.clientY);
+                if (targetId && targetId !== dragSourceRef.current) {
+                  swapFolders(dragSourceRef.current, targetId);
+                }
+              }
+              stopDragging();
+            }} onPointerCancel={stopDragging} onKeyDown={(event) => {
+              if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+              event.preventDefault();
+              const index = allFolders.findIndex((item) => item.id === folder.id);
+              const neighbor = allFolders[index + (event.key === "ArrowUp" ? -1 : 1)];
+              if (neighbor) {
+                swapFolders(folder.id, neighbor.id);
+              }
+            }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M8 5h.01M16 5h.01M8 12h.01M16 12h.01M8 19h.01M16 19h.01" strokeWidth="3" /></svg>
+            </button>
             <Link className={`${styles.folder} ${activeFolderId === folder.id ? styles.folderActive : ""}`} href={`/folder/${folder.id}`} aria-current={activeFolderId === folder.id ? "page" : undefined}><span className={styles.folderName}>{folder.name}</span></Link>
             <div className={styles.folderActions}>
               <button className={styles.editButton} type="button" aria-label={`${folder.name} 폴더 수정`} title={`${folder.name} 폴더 수정`} onClick={() => { setEditingFolder(folder); setEditName(folder.name); setEditError(""); editDialogRef.current?.showModal(); }}>
