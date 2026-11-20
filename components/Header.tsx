@@ -34,7 +34,17 @@ export default function Header() {
   return (
     <>
       <header className={styles.header}>
-        <strong className={styles.logo}><span className={styles.logoText}>북마크 모음집</span></strong>
+        <strong className={styles.logo}>
+          <svg className={styles.logoIcon} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <g transform="translate(16 16) scale(1.15) translate(-16 -16)">
+              <path d="M16 8C12 5.5 8 4.5 4 5.5v19c4-1 8 0 12 2.5V8Z" fill="#E8F3FF" stroke="#3182F6" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M16 8c4-2.5 8-3.5 12-2.5v19c-4-1-8 0-12 2.5V8Z" fill="white" stroke="#3182F6" strokeWidth="1.5" strokeLinejoin="round" />
+            </g>
+            <path d="M19.5 7c2.5-1 5.2-1.5 8-1v16.5l-4-2.8-4 2.8V7Z" fill="#3182F6" />
+            <path d="m23.5 9 1 2.8h2.8l-2.2 1.7.85 2.8-2.45-1.65-2.45 1.65.85-2.8-2.2-1.7h2.8L23.5 9Z" fill="#FFDC5E" />
+          </svg>
+          <span className={styles.logoText}>북마크 모음집</span>
+        </strong>
         <div className={styles.headerActions}>
           <button className={styles.folderButton} type="button" disabled={!ready} onClick={() => dialogRef.current?.showModal()}>+ 새 폴더</button>
           <Link className={styles.addButton} href="/new">+ 새 링크</Link>
