@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useState, type FormEvent } from "react";
 import { createClient } from "../utils/supabase/client";
+import googleLoginImage from "../public/google_login.png";
 import styles from "../app/auth.module.css";
+
+const providerNames = { kakao: "카카오", google: "구글" } as const;
+type SocialProvider = keyof typeof providerNames;
 
 export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const signup = mode === "signup";
@@ -15,6 +20,13 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const provider = new URLSearchParams(window.location.search).get("error");
+    if (provider !== "kakao" && provider !== "google") return;
+    window.history.replaceState(window.history.state, "", window.location.pathname);
+    queueMicrotask(() => setError(`${providerNames[provider]} 로그인을 완료하지 못했습니다. 다시 시도해 주세요.`));
+  }, []);
 
   useEffect(() => {
     if (!error) return;
@@ -89,6 +101,23 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
     }
   }
 
+  async function signInWithSocial(provider: SocialProvider) {
+    if (pending || success) return;
+    setPending(true);
+    setError("");
+    try {
+      const { error: oauthError } = await createClient().auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: `${window.location.origin}/auth/callback?flow=${provider}` },
+      });
+      if (oauthError) setError(`${providerNames[provider]} 로그인을 시작하지 못했습니다. 다시 시도해 주세요.`);
+    } catch {
+      setError(`${providerNames[provider]} 로그인을 시작하지 못했습니다. 다시 시도해 주세요.`);
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <main className={styles.page}>
       {error && <div className={styles.toast} role="alert">{error}</div>}
@@ -110,6 +139,8 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
           </div>}
           <button type="submit" className={styles.submit} disabled={!email.trim() || !password || (signup && !confirm) || pending || success}>{success ? (signup ? "회원가입 완료" : "로그인 완료") : pending ? (signup ? "가입 중..." : "로그인 중...") : signup ? "회원가입" : "로그인"}</button>
         </form>
+        {!signup && <button className={styles.socialButton} type="button" disabled={pending || success} onClick={() => signInWithSocial("google")}><Image className={styles.socialImage} src={googleLoginImage} alt="구글 로그인" /></button>}
+        {!signup && <button className={styles.socialButton} type="button" disabled={pending || success} onClick={() => signInWithSocial("kakao")}><Image className={styles.socialImage} src="/kakao_login_large_wide.png" width={600} height={90} alt="카카오 로그인" /></button>}
         {!signup && <Link href="/forgot-password" className={styles.recoveryLink}>비밀번호 찾기</Link>}
         <p className={styles.footer}>
           {signup ? "이미 계정이 있나요?" : "계정이 없나요?"}{" "}

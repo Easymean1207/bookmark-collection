@@ -6,7 +6,7 @@ import { createClient } from "../../utils/supabase/client";
 import styles from "../auth.module.css";
 
 export default function ResetPasswordPage() {
-  const [linkState, setLinkState] = useState<"checking" | "ready" | "invalid">("checking");
+  const [linkState, setLinkState] = useState<"checking" | "confirm" | "ready" | "invalid">("checking");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [pending, setPending] = useState(false);
@@ -24,11 +24,31 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     let active = true;
+    if (new URLSearchParams(window.location.hash.slice(1)).has("token_hash")) {
+      queueMicrotask(() => { if (active) setLinkState("confirm"); });
+      return () => { active = false; };
+    }
     createClient().auth.getUser().then(({ data, error: userError }) => {
       if (active) setLinkState(new URLSearchParams(window.location.search).has("error") || userError || !data.user ? "invalid" : "ready");
     }).catch(() => { if (active) setLinkState("invalid"); });
     return () => { active = false; };
   }, []);
+
+  async function confirmLink() {
+    const tokenHash = new URLSearchParams(window.location.hash.slice(1)).get("token_hash");
+    if (!tokenHash) { setLinkState("invalid"); return; }
+    if (pending) return;
+    setPending(true);
+    try {
+      const { error } = await createClient().auth.verifyOtp({ token_hash: tokenHash, type: "recovery" });
+      setLinkState(error ? "invalid" : "ready");
+    } catch {
+      setLinkState("invalid");
+    } finally {
+      window.history.replaceState(window.history.state, "", window.location.pathname);
+      setPending(false);
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -65,6 +85,7 @@ export default function ResetPasswordPage() {
       <section className={styles.card}>
         <h1 className={styles.logo}>새 비밀번호 설정</h1>
         {linkState === "checking" && <p className={styles.status} role="status">재설정 링크를 확인하는 중...</p>}
+        {linkState === "confirm" && <button className={styles.submit} type="button" disabled={pending} onClick={confirmLink}>{pending ? "확인 중..." : "재설정 링크 확인"}</button>}
         {linkState === "invalid" && <p className={`${styles.status} ${styles.statusError}`} role="alert">재설정 링크가 만료되었거나 유효하지 않습니다.</p>}
         {linkState === "ready" && !done && <form className={styles.fields} onSubmit={submit}>
           <div className={styles.field}>
