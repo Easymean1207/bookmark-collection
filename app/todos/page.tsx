@@ -1,6 +1,9 @@
 import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { createClient } from "@/utils/supabase/server";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("할 일", "할 일 목록을 확인하세요.");
 
 async function Todos() {
   const supabase = createClient(await cookies());

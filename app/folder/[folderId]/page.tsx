@@ -3,7 +3,10 @@ import { Suspense } from "react";
 import FolderContent from "../../../components/FolderContent";
 import Header from "../../../components/Header";
 import Sidebar from "../../../components/Sidebar";
+import { pageMetadata } from "../../../lib/page-metadata";
 import styles from "../../page.module.css";
+
+export const metadata = pageMetadata("폴더", "폴더에 저장한 링크를 확인하세요.");
 
 async function FolderRouteContent({ params }: { params: PageProps<"/folder/[folderId]">["params"] }) {
   const { folderId } = await params;
