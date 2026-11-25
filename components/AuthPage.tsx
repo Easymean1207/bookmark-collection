@@ -139,6 +139,7 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" }) {
           </div>}
           <button type="submit" className={styles.submit} disabled={!email.trim() || !password || (signup && !confirm) || pending || success}>{success ? (signup ? "회원가입 완료" : "로그인 완료") : pending ? (signup ? "가입 중..." : "로그인 중...") : signup ? "회원가입" : "로그인"}</button>
         </form>
+        {signup && <Link href="/privacy" className={styles.privacyLink}>개인정보 처리방침</Link>}
         {!signup && <button className={`${styles.socialButton} ${styles.googleButton}`} type="button" disabled={pending || success} onClick={() => signInWithSocial("google")}><Image className={styles.socialImage} src={googleLoginImage} alt="구글 로그인" /></button>}
         {!signup && <button className={styles.socialButton} type="button" disabled={pending || success} onClick={() => signInWithSocial("kakao")}><Image className={styles.socialImage} src="/kakao_login_large_wide.png" width={600} height={90} alt="카카오 로그인" /></button>}
         {!signup && <Link href="/forgot-password" className={styles.recoveryLink}>비밀번호 찾기</Link>}

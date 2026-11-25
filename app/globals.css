@@ -4,6 +4,7 @@
 
 .linkCard:hover .linkCardActions, .linkCard:focus-within .linkCardActions { opacity: 1; pointer-events: auto; }
 .linkCard:hover a::after, .linkCard:focus-within a::after { opacity: 0; }
+.privacy-nav-link:hover { background: var(--accent-soft); }
 @media (hover: none) {
   .linkCard .linkCardActions { opacity: 1; pointer-events: auto; }
   .linkCard a::after { opacity: 0; }
