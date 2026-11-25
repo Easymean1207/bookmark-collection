@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { pageMetadata } from "../../lib/page-metadata";
 import styles from "../page.module.css";
 
@@ -26,7 +27,13 @@ const sections = [
   ["changes", "처리방침의 변경"],
 ] as const;
 
-export default function PrivacyPage() {
+async function PreviousPageLink({ searchParams }: { searchParams: PageProps<"/privacy">["searchParams"] }) {
+  const from = (await searchParams).from;
+  const backHref = typeof from === "string" && (from === "/" || from === "/signup" || from === "/new" || /^\/folder\/db-[1-9]\d*$/.test(from)) ? from : "/";
+  return <Link href={backHref} className={styles.addButton}>← 이전 페이지로 돌아가기</Link>;
+}
+
+export default function PrivacyPage({ searchParams }: PageProps<"/privacy">) {
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-5 py-9 text-[var(--text)] sm:py-12">
       <article className="rounded-2xl bg-[var(--surface)] px-5 py-8 shadow-[0_2px_8px_rgba(25,31,40,0.08)] sm:px-10 sm:py-10">
@@ -137,7 +144,7 @@ export default function PrivacyPage() {
         </div>
       </article>
       <div className="mt-8 flex justify-center">
-        <Link href="/signup" className={styles.addButton}>회원가입으로 돌아가기</Link>
+        <Suspense fallback={null}><PreviousPageLink searchParams={searchParams} /></Suspense>
       </div>
     </main>
   );
