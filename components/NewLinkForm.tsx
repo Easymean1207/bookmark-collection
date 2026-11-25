@@ -8,7 +8,7 @@ import type { OpenGraph } from "../lib/open-graph";
 import styles from "../app/page.module.css";
 
 export default function NewLinkForm() {
-  const { allFolders } = useFolders();
+  const { allFolders, userId } = useFolders();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
@@ -19,6 +19,7 @@ export default function NewLinkForm() {
     if (savingRef.current) return;
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
+    if (!userId) { setError("로그인이 필요합니다."); return; }
     const folderId = String(form.get("folder") ?? "");
     const folder = allFolders.find((item) => item.id === folderId);
     if (!folder) { setError("폴더를 선택해 주세요."); return; }
@@ -34,7 +35,7 @@ export default function NewLinkForm() {
       const data = await response.json() as OpenGraph & { error?: string };
       if (!response.ok) throw new Error(data.error ?? "링크 정보를 가져오지 못했습니다.");
       const supabase = createClient();
-      const { data: existing, error: lookupError } = await supabase.from("links").select("id").eq("url", data.url).limit(1);
+      const { data: existing, error: lookupError } = await supabase.from("links").select("id").eq("user_id", userId).eq("url", data.url).limit(1);
       if (lookupError) throw lookupError;
       if (existing.length) throw new Error("이미 저장된 링크입니다.");
       const { error: insertError } = await supabase.from("links").insert({

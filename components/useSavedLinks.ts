@@ -9,17 +9,17 @@ import { createClient } from "../utils/supabase/client";
 const changeEvent = "bookmark-links-changed";
 
 export function useDatabaseLinks() {
-  const { ready } = useFolders();
-  const [databaseLinks, setDatabaseLinks] = useState<LinkItem[]>([]);
+  const { ready, userId, authVersion } = useFolders();
+  const [databaseLinks, setDatabaseLinks] = useState<{ version: number; links: LinkItem[] } | null>(null);
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !userId) return;
     let active = true;
     function load() {
       createClient().from("links").select("id, url, title, description, thumbnail_url, folder_id")
-        .order("created_at").then(({ data, error }) => {
+        .eq("user_id", userId).order("created_at").then(({ data, error }) => {
           if (!active) return;
           if (error) { console.error("Failed to load links", error); return; }
-          setDatabaseLinks(data.map((link) => ({
+          setDatabaseLinks({ version: authVersion, links: data.map((link) => ({
             dbId: `db-link-${link.id}`,
             url: link.url,
             title: link.title ?? link.url,
@@ -27,14 +27,14 @@ export function useDatabaseLinks() {
             thumbnail: link.thumbnail_url,
             folderId: link.folder_id == null ? undefined : `db-${link.folder_id}`,
             category: "미분류",
-          })));
+          })) });
         });
     }
     load();
     window.addEventListener(changeEvent, load);
     return () => { active = false; window.removeEventListener(changeEvent, load); };
-  }, [ready]);
-  return databaseLinks;
+  }, [ready, userId, authVersion]);
+  return ready && databaseLinks?.version === authVersion ? databaseLinks.links : [];
 }
 
 export async function deleteLink(link: LinkItem) {
