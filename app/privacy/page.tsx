@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-const effectiveDate = "2026-11-25";
+const effectiveDate = "2026-11-26";
 const contactEmail = "easymean1207@gmail.com";
 
 const sections = [
@@ -66,7 +66,7 @@ export default function PrivacyPage({ searchParams }: PageProps<"/privacy">) {
           <div className="min-w-0 max-w-[640px] divide-y divide-gray-200 text-[16px] leading-7 sm:text-[17px] sm:leading-8 [&_h2]:mb-4 [&_h2]:text-[20px] [&_h2]:font-bold [&_h2]:leading-7 [&_section]:scroll-mt-6 [&_section]:py-8 [&_section:first-child]:pt-0">
           <section id="purpose">
             <h2>1. 개인정보의 처리 목적</h2>
-            <p>계정 생성과 로그인, 저장한 링크 및 폴더의 관리, 문의 응대와 서비스의 안전한 운영을 위해 개인정보를 처리합니다.</p>
+            <p>계정 생성과 로그인, 저장한 링크 및 폴더의 관리, 문의 응대, 서비스의 안전한 운영과 이용 행태 분석을 통한 사용성 개선을 위해 개인정보를 처리합니다.</p>
           </section>
 
           <section id="items">
@@ -77,17 +77,19 @@ export default function PrivacyPage({ searchParams }: PageProps<"/privacy">) {
               <li>서비스 이용 시: 저장한 링크의 URL·제목·설명·썸네일 URL, 폴더 이름, 생성 시각 및 계정 식별자.</li>
               <li>브라우저 저장소에 계정별 폴더 정렬 순서를 저장합니다.</li>
               <li>접속 과정에서: 로그인 세션 쿠키, IP 주소와 접속 기록이 인증 및 호스팅 서비스 운영 과정에서 생성될 수 있습니다.</li>
+              <li>Microsoft Clarity 이용 시: 방문 페이지, 클릭한 링크 주소, 클릭·스크롤·마우스 이동 등 이용 행태와 분석용 쿠키 식별자가 수집될 수 있습니다.</li>
             </ul>
           </section>
 
           <section id="retention">
             <h2>3. 개인정보의 처리 및 보유 기간</h2>
             <p>계정 정보와 저장한 링크·폴더 정보는 서비스 이용 기간 동안 보유합니다. 계정 삭제를 요청하거나 처리 목적이 끝나면 지체 없이 파기합니다. 관계 법령에 따라 보존할 의무가 있는 정보는 해당 법령에서 정한 기간 동안만 별도로 보관합니다.</p>
+            <p className="mt-3">Microsoft Clarity의 세션 재생 정보는 30일, 클릭·집계 정보는 9개월 동안 보관됩니다.</p>
           </section>
 
           <section id="disclosure">
             <h2>4. 개인정보의 제3자 제공</h2>
-            <p>법령에 근거가 있거나 이용자가 별도로 동의한 경우를 제외하고, 개인정보를 제3자에게 제공하지 않습니다.</p>
+            <p>사이트 이용 분석을 위해 Microsoft Clarity가 방문 페이지, 클릭한 링크 주소와 이용 행태 정보를 Microsoft Corporation에 전달합니다. Microsoft의 정보 처리 방식은 <a className="font-semibold text-[var(--accent-hover)] underline" href="https://privacy.microsoft.com/privacystatement">Microsoft 개인정보처리방침</a>에서 확인할 수 있습니다. 그 밖에는 법령에 근거가 있거나 이용자가 별도로 동의한 경우를 제외하고 개인정보를 제3자에게 제공하지 않습니다.</p>
           </section>
 
           <section id="outsourcing">
@@ -122,7 +124,7 @@ export default function PrivacyPage({ searchParams }: PageProps<"/privacy">) {
 
           <section id="cookies">
             <h2>9. 쿠키의 사용과 거부 방법</h2>
-            <p>로그인 상태를 유지하기 위해 인증 쿠키를 사용하고, 폴더 정렬 순서는 브라우저 저장소에 보관합니다. 브라우저 설정에서 쿠키와 사이트 데이터를 차단하거나 삭제할 수 있으나, 차단하면 로그인이 필요한 기능을 이용하기 어렵습니다.</p>
+            <p>로그인 상태를 유지하기 위해 인증 쿠키를 사용하고, 폴더 정렬 순서는 브라우저 저장소에 보관합니다. Microsoft Clarity는 방문과 이용 행태 분석을 위해 분석 쿠키를 사용할 수 있습니다. 브라우저 설정에서 쿠키와 사이트 데이터를 차단하거나 삭제할 수 있으나, 차단하면 로그인이 필요한 기능을 이용하기 어렵습니다.</p>
           </section>
 
           <section id="contact">

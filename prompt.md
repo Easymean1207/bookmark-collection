@@ -1,5 +1,11 @@
-개인정보 처리방침 페이지를 만들어줘.
+아래 코드는 Microsoft Clarity 추적 스크립트야.
 
-- 이 페이지로 향하는 링크를, 좌측 사이드바 컴포넌트의 로그아웃 버튼 아래에 회색으로 추가해줘
-- 회원가입 페이지에서도 확인할 수 있도록 회색 링크로 추가해줘
-- 이 페이지는 인증되지 않은 사용자도 접근할 수 있도록 해줘
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "zjly8ue6sr");
+</script>
+
+이 스크립트를 Next.js 프로젝트의 모든 페이지에 적용되도록 삽입해줘. <head> 태그 안에 들어가야 해.
